@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const socket_io_1 = require("socket.io");
 const http_1 = require("http");
+const usersutil_1 = require("./utils/usersutil");
 const cors = require('cors');
 const socketio = require('socket.io');
 const app = (0, express_1.default)();
@@ -25,20 +26,27 @@ const io = new socket_io_1.Server(server, {
         res.send("hello");
     });
     io.on("connection", async (socket) => {
-        socket.on("join_room", (data) => {
-            socket.join(data);
-            console.log(`User with ID: ${socket.id} joined room: ${data}`);
+        socket.on('join', ({ name, room }, callback) => {
+            console.log("mf joinde===", name, room);
+            const { error, user } = (0, usersutil_1.addUser)({ id: socket.id, name, room });
+            socket.emit('message', { user: 'admin', text: `${user === null || user === void 0 ? void 0 : user.name},welcome to room ${user === null || user === void 0 ? void 0 : user.room}.` });
+            socket.broadcast.to(user === null || user === void 0 ? void 0 : user.room).emit('message', { user: "admin", text: `${user === null || user === void 0 ? void 0 : user.name}, has joined` });
+            socket.join(user === null || user === void 0 ? void 0 : user.room);
+            io.to(user === null || user === void 0 ? void 0 : user.room).emit('room_data', {
+                room: user === null || user === void 0 ? void 0 : user.room,
+                users: (0, usersutil_1.userCount)()
+            });
         });
-        socket.on("new_message", (data) => {
-            console.log("data ==== ", data);
-            io.emit("new_message_added", data);
+        socket.on('new_message', (newMessage, callback) => {
+            console.log("user embeded in socket ", newMessage, socket.id);
+            const user = newMessage.user;
+            io.to(user === null || user === void 0 ? void 0 : user.room).emit('new_message_added', { user: user === null || user === void 0 ? void 0 : user.name, newMessage });
+            io.to(user === null || user === void 0 ? void 0 : user.room).emit('room_data', { room: user === null || user === void 0 ? void 0 : user.room, users: (0, usersutil_1.getUsersInRoom)(user === null || user === void 0 ? void 0 : user.room).length });
         });
         socket.on("disconnect", () => {
             console.log("User Disconnected", socket.id);
+            (0, usersutil_1.removeUser)(socket.id);
         });
-    });
-    io.on('disconnect', (socket) => {
-        console.log("user disconnected === ", socket.id);
     });
     server.listen(PORT, () => {
         console.log(`listening on  http://localhost:${PORT}`);

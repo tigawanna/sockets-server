@@ -1,6 +1,7 @@
 import express,{ Request,Response } from "express";
 import { Server } from "socket.io";
 import { createServer } from "http";
+import { addUser, getUsersInRoom, getUser, removeUser, userCount } from './utils/usersutil';
 // const express = require('express');
 
 const cors = require('cors');
@@ -42,30 +43,69 @@ app.get('/', (req:Request, res:Response) => {
 
 io.on("connection", async(socket) => {
 
+ 
+socket.on('join', ({ name, room }, callback) => {
+
+ console.log("mf joinde===",name,room)
+
+    const { error, user } = addUser(
+      { id: socket.id, name, room });
+
+    // if (error) return callback(error);
+
+    // Emit will send message to the user
+    // who had joined
+    socket.emit('message', { user: 'admin', text:`${user?.name},welcome to room ${user?.room}.`});
+
+    // Broadcast will send message to everyone
+    // in the room except the joined user
+    socket.broadcast.to(user?.room).emit('message', { user: "admin",text: `${user?.name}, has joined`});
+
+    socket.join(user?.room);
+    // console.log("room",user?.room)
+    io.to(user?.room).emit('room_data', {
+        room: user?.room,
+        users: userCount()
+    });
+
+ 
+}
+)
 
 
-  socket.on("join_room", (data) => {
-    socket.join(data);
-    console.log(`User with ID: ${socket.id} joined room: ${data}`);
-  });
+  // socket.on("join_room", (data) => {
+  //   socket.join(data);
+  //   console.log(`User with ID: ${socket.id} joined room: ${data}`);
+  // });
 
-  socket.on("new_message", (data) => {
-    console.log("data ==== ",data)
-    io.emit("new_message_added", data);
-  });
+  // socket.on("new_message", (data) => {
+  //   console.log("data ==== ",data)
+  //   io.emit("new_message_added", data);
+  // });
+
+  socket.on('new_message', (newMessage, callback) => {
+  console.log("user embeded in socket ",newMessage,socket.id)
+    const user = newMessage.user
+    //@ts-ignore
+    io.to(user?.room).emit('new_message_added', { user: user?.name,newMessage});
+   //@ts-ignore
+    io.to(user?.room).emit('room_data', { room: user?.room,users: getUsersInRoom(user?.room).length });
+    // callback();
+})
 
   socket.on("disconnect", () => {
     console.log("User Disconnected", socket.id);
+    removeUser(socket.id)
   });
 });
 
 
-io.on('disconnect', (socket) => {
-    console.log("user disconnected === ",socket.id)
-    // socket.on("new-operations", function(data) {
-    //     io.emit("new-remote-operations", data);
-    //   });
-});
+// io.on('disconnect', (socket) => {
+//     console.log("user disconnected === ",socket.id)
+//     // socket.on("new-operations", function(data) {
+//     //     io.emit("new-remote-operations", data);
+//     //   });
+// });
 
 server.listen(PORT, () => {
   console.log(`listening on  http://localhost:${PORT}`)

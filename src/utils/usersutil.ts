@@ -4,38 +4,66 @@ interface User{
  room:string   
 }
 const users:User[] = [];
- 
-export const addUser = ({id, name, room}) => {
-    name = name.trim().toLowerCase();
-    room = room.trim().toLowerCase();
- 
-    const existingUser = users.find((user) => {
-        user.room === room && user.name === name
-    });
- 
-    if(existingUser) {
-        return{error: "Username is taken"};
+
+const userExists=(users:User[],name:string)=>{
+let status = false    
+for(let i = 0;i<users.length;i++){
+    if(users[i].name===name){
+    status = true;
+    break
     }
-    const user = {id,name,room};
- 
-    users.push(user);
-    return {user};
- 
+}
+return status;
 }
  
-export const removeUser = (id:string) => {
-    const index = users.findIndex((user) => {
-        user.id === id
-    });
+export const addUser = ({id, name, room}) => {
+    name = name?.trim().toLowerCase();
+    room = room?.trim().toLowerCase();
+    
+    console.log("all users === ",users)
+    console.log("user to add ==== ",name)
+
+   const existingUser = userExists(users,name)
+    console.log("existing user HH++++ ====",existingUser)
+    if(existingUser) {
+    console.log("existing user")
+    return{error: "Username is taken"};
+    }else{
+    const user = {id,name,room};
+    console.log("adding user === ",user)
+    users.push(user);
+    return {user};
+    }
+  
  
+}
+const userExistsIndex=(users:User[],id:string)=>{
+    let status = -1   
+    for(let i = 0;i<users.length;i++){
+        if(users[i].id === id){
+        status = i;
+        break
+        }
+    }
+    return status;
+    }
+
+export const removeUser = (id:string) => {
+    // const index = users.findIndex((user) => {
+    //     user.id === id
+    // });
+    const index = userExistsIndex(users,id)
+    console.log(index)
     if(index !== -1) {
+    console.log("user ",users[index].name ,"disconected , removing them")
     return users.splice(index,1)[0];
     }
     
 }
+
+
+export const getUser = (id:string) => users .find((user) => user.id === id);
  
-export const getUser = (id:string) => users
-        .find((user) => user.id === id);
- 
-export const getUsersInRoom = (room:string) => users
-        .filter((user) => user.room === room);
+export const getUsersInRoom = (room:string) => users.filter((user) => user.room === room);
+
+export const userCount =()=>users.length
