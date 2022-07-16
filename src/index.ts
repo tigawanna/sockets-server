@@ -1,34 +1,48 @@
-const express = require('express');
-const http = require('http');
+import express,{ Request,Response } from "express";
+import { Server } from "socket.io";
+import { createServer } from "http";
+// const express = require('express');
+
 const cors = require('cors');
 const socketio = require('socket.io')
 
 
 
+
+
 const app = express();
 
-const PORT =process.env.PORT||4000
-const server = http.createServer(app);
+const PORT = process.env.PORT||4000
+const server = createServer(app);
+// const httpServer = createServer(app);
 
-const io = socketio(server, {
-    cors: {
-        origin: "http://localhost:3000",
-        credentials: true,
-        allowedHeaders: ["my-custom-header"],
- 
-    }
+const io = new Server(server,{ 
+  cors: {
+    origin: "http://localhost:3000",
+    credentials: true,
+    allowedHeaders: ["my-custom-header"],
+
+}
 });
+
+(async () => {
+
+
 
 
 app.use(cors())
 app.options('*', cors());
 
-app.get('/', (req, res) => {
-  res.sendFile(__dirname + '/index.html');
+app.get('/', (req:Request, res:Response) => {
+  res.send("hello");
 });
 
-io.on("connection", (socket) => {
-  console.log(`User Connected: ${socket.id}`);
+
+
+
+io.on("connection", async(socket) => {
+
+
 
   socket.on("join_room", (data) => {
     socket.join(data);
@@ -56,3 +70,6 @@ io.on('disconnect', (socket) => {
 server.listen(PORT, () => {
   console.log(`listening on  http://localhost:${PORT}`)
 });
+
+})().catch(e=> console.log('error on server ====== ',e))
+
