@@ -15,24 +15,27 @@ for(let i = 0;i<users.length;i++){
 }
 return status;
 }
- 
+
+console.log("all users in list=== ",users)
+
 export const addUser = ({id, name, room}) => {
     name = name?.trim().toLowerCase();
     room = room?.trim().toLowerCase();
     
-    console.log("all users === ",users)
+  
     console.log("user to add ==== ",name)
 
    const existingUser = userExists(users,name)
-    console.log("existing user HH++++ ====",existingUser)
+    console.log("existing user????====",existingUser)
     if(existingUser) {
     console.log("existing user")
-    return{error: "Username is taken"};
+    return users.length;
     }else{
     const user = {id,name,room};
     console.log("adding user === ",user)
     users.push(user);
-    return {user};
+    console.log("all users === ",users)
+    return users.length;
     }
   
  

@@ -45,12 +45,14 @@ io.on("connection", async(socket) => {
 console.log(`Client ${socket.id} connected`);
 
   // Join a conversation
-  const { roomId } = socket.handshake.query;
+  const { roomId,user } = socket.handshake.query;
   const room_id = roomId as string
-  console.log("room  id ==== ",room_id)
-  socket.join(room_id);
-  io.in(room_id).emit('room_data', {room: room_id,users: userCount()});
 
+ 
+  const user_count =  addUser({id:socket.id,name:user,room:roomId})
+  console.log("room  id / user==== ",room_id,user,user_count)
+  socket.join(room_id);
+  io.in(room_id).emit('room_data', {room: room_id,users:user_count});
 
 
   // Listen for new messages
@@ -128,12 +130,7 @@ socket.on('new_message', (newMessage) => {
 });
 
 
-// io.on('disconnect', (socket) => {
-//     console.log("user disconnected === ",socket.id)
-//     // socket.on("new-operations", function(data) {
-//     //     io.emit("new-remote-operations", data);
-//     //   });
-// });
+
 
 server.listen(PORT, () => {
   console.log(`listening on  http://localhost:${PORT}`)

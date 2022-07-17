@@ -12,22 +12,23 @@ const userExists = (users, name) => {
     }
     return status;
 };
+console.log("all users in list=== ", users);
 const addUser = ({ id, name, room }) => {
     name = name === null || name === void 0 ? void 0 : name.trim().toLowerCase();
     room = room === null || room === void 0 ? void 0 : room.trim().toLowerCase();
-    console.log("all users === ", users);
     console.log("user to add ==== ", name);
     const existingUser = userExists(users, name);
-    console.log("existing user HH++++ ====", existingUser);
+    console.log("existing user????====", existingUser);
     if (existingUser) {
         console.log("existing user");
-        return { error: "Username is taken" };
+        return users.length;
     }
     else {
         const user = { id, name, room };
         console.log("adding user === ", user);
         users.push(user);
-        return { user };
+        console.log("all users === ", users);
+        return users.length;
     }
 };
 exports.addUser = addUser;

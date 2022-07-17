@@ -27,11 +27,12 @@ const io = new socket_io_1.Server(server, {
     });
     io.on("connection", async (socket) => {
         console.log(`Client ${socket.id} connected`);
-        const { roomId } = socket.handshake.query;
+        const { roomId, user } = socket.handshake.query;
         const room_id = roomId;
-        console.log("room  id ==== ", room_id);
+        const user_count = (0, usersutil_1.addUser)({ id: socket.id, name: user, room: roomId });
+        console.log("room  id / user==== ", room_id, user, user_count);
         socket.join(room_id);
-        io.in(room_id).emit('room_data', { room: room_id, users: (0, usersutil_1.userCount)() });
+        io.in(room_id).emit('room_data', { room: room_id, users: user_count });
         socket.on('new_message', (newMessage) => {
             console.log("user embeded in socket ", newMessage, socket.id);
             const user = newMessage.user;
