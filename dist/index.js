@@ -8,7 +8,6 @@ const socket_io_1 = require("socket.io");
 const http_1 = require("http");
 const usersutil_1 = require("./utils/usersutil");
 const cors = require('cors');
-const socketio = require('socket.io');
 const app = (0, express_1.default)();
 const PORT = process.env.PORT || 4000;
 const server = (0, http_1.createServer)(app);
@@ -27,16 +26,15 @@ const io = new socket_io_1.Server(server, {
     });
     io.on("connection", async (socket) => {
         console.log(`Client ${socket.id} connected`);
-        const { roomId, user } = socket.handshake.query;
-        const room_id = roomId;
-        const user_count = (0, usersutil_1.addUser)({ id: socket.id, name: user, room: roomId });
-        console.log("room  id / user==== ", room_id, user, user_count);
+        const { room, user } = socket.handshake.query;
+        const room_id = room;
+        const user_count = (0, usersutil_1.addUser)({ id: socket.id, name: user, room });
         socket.join(room_id);
-        io.in(room_id).emit('room_data', { room: room_id, users: user_count });
+        io.in(room_id).emit('room_data', { room, users: user_count });
         socket.on('new_message', (newMessage) => {
             console.log("user embeded in socket ", newMessage, socket.id);
             const user = newMessage.user;
-            io.to(room_id).emit('new_message_added', { user: user === null || user === void 0 ? void 0 : user.name, newMessage });
+            io.in(room_id).emit('new_message_added', { user: user === null || user === void 0 ? void 0 : user.name, newMessage });
         });
         socket.on("disconnect", () => {
             console.log("User Disconnected new user count ====", socket.id, user_count);

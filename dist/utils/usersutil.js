@@ -28,7 +28,8 @@ const addUser = ({ id, name, room }) => {
         console.log("adding user === ", user);
         users.push(user);
         console.log("all users === ", users);
-        return users.length;
+        const count = (0, exports.getUsersInRoom)(room).length;
+        return count;
     }
 };
 exports.addUser = addUser;
