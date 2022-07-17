@@ -28,9 +28,6 @@ const io = new Server(server,{
 
 (async () => {
 
-
-
-
 app.use(cors())
 app.options('*', cors());
 
@@ -43,34 +40,63 @@ app.get('/', (req:Request, res:Response) => {
 
 io.on("connection", async(socket) => {
 
+
+
+console.log(`Client ${socket.id} connected`);
+
+  // Join a conversation
+  const { roomId } = socket.handshake.query;
+  const room_id = roomId as string
+  console.log("room  id ==== ",room_id)
+  socket.join(room_id);
+  io.in(room_id).emit('room_data', {room: room_id,users: userCount()});
+
+
+
+  // Listen for new messages
+  // socket.on(NEW_CHAT_MESSAGE_EVENT, (data) => {
+  //   io.in(room_id).emit(NEW_CHAT_MESSAGE_EVENT, data);
+  // });
+
+socket.on('new_message', (newMessage) => {
+ console.log("user embeded in socket ",newMessage,socket.id)
+ const user = newMessage.user
+      //@ts-ignore
+  io.to(room_id).emit('new_message_added', { user: user?.name,newMessage});
+     //@ts-ignore
+  io.to(room_id).emit('room_data', { room:room_id,users: getUsersInRoom(room_id).length });
  
-socket.on('join', ({ name, room }, callback) => {
+  })
 
- console.log("mf joinde===",name,room)
-
-    const { error, user } = addUser(
-      { id: socket.id, name, room });
-
-    // if (error) return callback(error);
-
-    // Emit will send message to the user
-    // who had joined
-    socket.emit('message', { user: 'admin', text:`${user?.name},welcome to room ${user?.room}.`});
-
-    // Broadcast will send message to everyone
-    // in the room except the joined user
-    socket.broadcast.to(user?.room).emit('message', { user: "admin",text: `${user?.name}, has joined`});
-
-    socket.join(user?.room);
-    // console.log("room",user?.room)
-    io.to(user?.room).emit('room_data', {
-        room: user?.room,
-        users: userCount()
-    });
 
  
-}
-)
+// socket.on('join', ({ name}) => {
+// const { roomId } = socket.handshake.query;
+//   const room= roomId as string
+
+//     const { error, user } = addUser(
+//       { id: socket.id, name, room });
+
+//     // if (error) return callback(error);
+
+//     // Emit will send message to the user
+//     // who had joined
+//     socket.emit('message', { user: 'admin', text:`${user?.name},welcome to room ${user?.room}.`});
+
+//     // Broadcast will send message to everyone
+//     // in the room except the joined user
+//     socket.broadcast.to(user?.room).emit('message', { user: "admin",text: `${user?.name}, has joined`});
+
+//     socket.join(user?.room);
+//     // console.log("room",user?.room)
+//     io.to(user?.room).emit('room_data', {
+//         room: room,
+//         users: userCount()
+//     });
+
+ 
+// }
+// )
 
 
   // socket.on("join_room", (data) => {
@@ -83,15 +109,17 @@ socket.on('join', ({ name, room }, callback) => {
   //   io.emit("new_message_added", data);
   // });
 
-  socket.on('new_message', (newMessage, callback) => {
-  console.log("user embeded in socket ",newMessage,socket.id)
-    const user = newMessage.user
-    //@ts-ignore
-    io.to(user?.room).emit('new_message_added', { user: user?.name,newMessage});
-   //@ts-ignore
-    io.to(user?.room).emit('room_data', { room: user?.room,users: getUsersInRoom(user?.room).length });
-    // callback();
-})
+//   socket.on('new_message', (newMessage, callback) => {
+//   console.log("user embeded in socket ",newMessage,socket.id)
+//     const user = newMessage.user
+//     //@ts-ignore
+//     io.to(user?.room).emit('new_message_added', { user: user?.name,newMessage});
+//    //@ts-ignore
+//     io.to(user?.room).emit('room_data', { room: user?.room,users: getUsersInRoom(user?.room).length });
+//     // callback();
+// })
+
+
 
   socket.on("disconnect", () => {
     console.log("User Disconnected", socket.id);

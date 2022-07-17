@@ -26,22 +26,17 @@ const io = new socket_io_1.Server(server, {
         res.send("hello");
     });
     io.on("connection", async (socket) => {
-        socket.on('join', ({ name, room }, callback) => {
-            console.log("mf joinde===", name, room);
-            const { error, user } = (0, usersutil_1.addUser)({ id: socket.id, name, room });
-            socket.emit('message', { user: 'admin', text: `${user === null || user === void 0 ? void 0 : user.name},welcome to room ${user === null || user === void 0 ? void 0 : user.room}.` });
-            socket.broadcast.to(user === null || user === void 0 ? void 0 : user.room).emit('message', { user: "admin", text: `${user === null || user === void 0 ? void 0 : user.name}, has joined` });
-            socket.join(user === null || user === void 0 ? void 0 : user.room);
-            io.to(user === null || user === void 0 ? void 0 : user.room).emit('room_data', {
-                room: user === null || user === void 0 ? void 0 : user.room,
-                users: (0, usersutil_1.userCount)()
-            });
-        });
-        socket.on('new_message', (newMessage, callback) => {
+        console.log(`Client ${socket.id} connected`);
+        const { roomId } = socket.handshake.query;
+        const room_id = roomId;
+        console.log("room  id ==== ", room_id);
+        socket.join(room_id);
+        io.in(room_id).emit('room_data', { room: room_id, users: (0, usersutil_1.userCount)() });
+        socket.on('new_message', (newMessage) => {
             console.log("user embeded in socket ", newMessage, socket.id);
             const user = newMessage.user;
-            io.to(user === null || user === void 0 ? void 0 : user.room).emit('new_message_added', { user: user === null || user === void 0 ? void 0 : user.name, newMessage });
-            io.to(user === null || user === void 0 ? void 0 : user.room).emit('room_data', { room: user === null || user === void 0 ? void 0 : user.room, users: (0, usersutil_1.getUsersInRoom)(user === null || user === void 0 ? void 0 : user.room).length });
+            io.to(room_id).emit('new_message_added', { user: user === null || user === void 0 ? void 0 : user.name, newMessage });
+            io.to(room_id).emit('room_data', { room: room_id, users: (0, usersutil_1.getUsersInRoom)(room_id).length });
         });
         socket.on("disconnect", () => {
             console.log("User Disconnected", socket.id);
