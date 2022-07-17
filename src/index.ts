@@ -65,8 +65,7 @@ socket.on('new_message', (newMessage) => {
  const user = newMessage.user
       //@ts-ignore
   io.to(room_id).emit('new_message_added', { user: user?.name,newMessage});
-     //@ts-ignore
-  io.to(room_id).emit('room_data', { room:room_id,users: getUsersInRoom(room_id).length });
+
  
   })
 
@@ -124,9 +123,9 @@ socket.on('new_message', (newMessage) => {
 
 
   socket.on("disconnect", () => {
-    console.log("User Disconnected", socket.id);
+    console.log("User Disconnected new user count ====", socket.id,user_count);
     removeUser(socket.id)
-    io.in(room_id).emit('room_data', {room: room_id,users:user_count});
+    io.in(room_id).emit('room_data', {room: room_id,users:user_count - 1 });
   });
 });
 

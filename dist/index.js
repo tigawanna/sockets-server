@@ -37,11 +37,11 @@ const io = new socket_io_1.Server(server, {
             console.log("user embeded in socket ", newMessage, socket.id);
             const user = newMessage.user;
             io.to(room_id).emit('new_message_added', { user: user === null || user === void 0 ? void 0 : user.name, newMessage });
-            io.to(room_id).emit('room_data', { room: room_id, users: (0, usersutil_1.getUsersInRoom)(room_id).length });
         });
         socket.on("disconnect", () => {
-            console.log("User Disconnected", socket.id);
+            console.log("User Disconnected new user count ====", socket.id, user_count);
             (0, usersutil_1.removeUser)(socket.id);
+            io.in(room_id).emit('room_data', { room: room_id, users: user_count - 1 });
         });
     });
     server.listen(PORT, () => {
