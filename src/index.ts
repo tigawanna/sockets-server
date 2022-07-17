@@ -126,6 +126,7 @@ socket.on('new_message', (newMessage) => {
   socket.on("disconnect", () => {
     console.log("User Disconnected", socket.id);
     removeUser(socket.id)
+    io.in(room_id).emit('room_data', {room: room_id,users:user_count});
   });
 });
 
