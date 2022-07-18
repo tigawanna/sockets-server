@@ -58,7 +58,7 @@ console.log(`Client ${socket.id} connected`);
 
 
 socket.on('new_message', (newMessage) => {
- console.log("user embeded in socket ",newMessage,socket.id)
+ console.log("new message ",newMessage,room_id)
  const user = newMessage.user
       //@ts-ignore
   io.in(room_id).emit('new_message_added', { user: user?.name,newMessage});

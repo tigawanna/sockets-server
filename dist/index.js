@@ -32,7 +32,7 @@ const io = new socket_io_1.Server(server, {
         socket.join(room_id);
         io.in(room_id).emit('room_data', { room, users: user_count });
         socket.on('new_message', (newMessage) => {
-            console.log("user embeded in socket ", newMessage, socket.id);
+            console.log("new message ", newMessage, room_id);
             const user = newMessage.user;
             io.in(room_id).emit('new_message_added', { user: user === null || user === void 0 ? void 0 : user.name, newMessage });
         });
