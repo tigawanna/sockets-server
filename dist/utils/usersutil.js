@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.userCount = exports.getUsersInRoom = exports.getUser = exports.removeUser = exports.addUser = void 0;
+exports.userCount = exports.getUsersInRoom = exports.getUser = exports.removeUser = exports.checkUserNameExists = exports.addUser = void 0;
 const users = [];
 const userExists = (users, name) => {
     let status = false;
@@ -12,22 +12,16 @@ const userExists = (users, name) => {
     }
     return status;
 };
-console.log("all users in list=== ", users);
 const addUser = ({ id, name, room }) => {
     name = name === null || name === void 0 ? void 0 : name.trim().toLowerCase();
     room = room === null || room === void 0 ? void 0 : room.trim().toLowerCase();
-    console.log("user to add ==== ", name);
     const existingUser = userExists(users, name);
-    console.log("existing user????====", existingUser);
     if (existingUser) {
-        console.log("existing user");
         return users.length;
     }
     else {
         const user = { id, name, room };
-        console.log("adding user === ", user);
         users.push(user);
-        console.log("all users === ", users);
         const count = (0, exports.getUsersInRoom)(room).length;
         return count;
     }
@@ -43,11 +37,20 @@ const userExistsIndex = (users, id) => {
     }
     return status;
 };
+const checkUserNameExists = (name) => {
+    let status = false;
+    for (let i = 0; i < users.length; i++) {
+        if (users[i].name === name) {
+            status = true;
+            break;
+        }
+    }
+    return status;
+};
+exports.checkUserNameExists = checkUserNameExists;
 const removeUser = (id) => {
     const index = userExistsIndex(users, id);
-    console.log(index);
     if (index !== -1) {
-        console.log("user ", users[index].name, "disconected , removing them");
         return users.splice(index, 1)[0];
     }
 };
